@@ -26,21 +26,20 @@ func parent(i int) int {
 	return (i - 1) >> 1
 }
 
+func left(i int) int {
+	return (i << 1) + 1
+}
+
+func right(i int) int {
+	return (i << 1) + 2
+}
+
 func (s *Segtree[S, _, _]) Set(p int, x S) {
 	i := s.leaf(p)
-	for {
-		s.d[i] = x
-		if i == 0 {
-			break
-		}
-		j := i
-		if isRight(i) {
-			j--
-		} else {
-			j++
-		}
-		x = s.op(x, s.d[j])
+	s.d[i] = x
+	for i != 0 {
 		i = parent(i)
+		s.d[i] = s.op(s.d[left(i)], s.d[right(i)])
 	}
 }
 
@@ -71,7 +70,7 @@ func New[S any, Op OpOf[S], E EOf[S]](op Op, e E, n int) *Segtree[S, Op, E] {
 		two <<= 1
 	}
 	d := make([]S, two*2-1)
-	for i := 0; i < len(d); i++ {
+	for i := range d {
 		d[i] = e()
 	}
 	return &Segtree[S, Op, E]{
